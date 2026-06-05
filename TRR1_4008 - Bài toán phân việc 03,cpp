@@ -1,0 +1,72 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <climits>
+using namespace std;
+int n;
+int c[16][16];
+bool da_chon[16];
+int p[16], best_p[16];
+long long min_cost = LLONG_MAX;
+int min_val_row[16]; // Lưu giá trị chi phí nhỏ nhất của mỗi hàng để làm cận
+// Hàm tính cận dưới cho các công việc còn lại
+long long tinh_can(int i)
+{
+    long long can = 0;
+    for (int j = i; j < n; ++j)
+    {
+        can += min_val_row[j];
+    }
+    return can;
+}
+
+void nhanh_can(int i, long long wht)
+{
+    // Nếu tổng chi phí hiện tại + cận dưới vẫn >= min_cost, cắt tỉa
+    if (wht + tinh_can(i) >= min_cost)
+        return;
+
+    if (i == n)
+    {
+        if (wht < min_cost)
+        {
+            min_cost = wht;
+            for (int k = 0; k < n; ++k)
+                best_p[k] = p[k];
+        }
+        return;
+    }
+
+    for (int j = 0; j < n; ++j)
+    {
+        if (!da_chon[j])
+        {
+            da_chon[j] = true;
+            p[i] = j;
+            nhanh_can(i + 1, wht + c[i][j]);
+            da_chon[j] = false; // Backtrack
+        }
+    }
+}
+
+int main()
+{
+    cin >> n;
+    for (int i = 0; i < n; ++i)
+    {
+        min_val_row[i] = INT_MAX;
+        for (int j = 0; j < n; ++j)
+        {
+            cin >> c[i][j];
+            if (c[i][j] < min_val_row[i])
+                min_val_row[i] = c[i][j];
+        }
+    }
+
+    nhanh_can(0, 0);
+
+    cout << min_cost << endl;
+    for (int i = 0; i < n; ++i)
+        cout << best_p[i] + 1 << " ";
+    return 0;
+}
